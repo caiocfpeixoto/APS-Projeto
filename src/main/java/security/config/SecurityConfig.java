@@ -2,6 +2,7 @@ package security.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import security.domain.PerfilTipo;
 import security.service.UsuarioService;
 
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
@@ -26,13 +28,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 		http.authorizeRequests()
 		.antMatchers("/webjars/**", "/css/**", "/image/**", "/js/**").permitAll()
 		.antMatchers("/","/home").permitAll()
+		.antMatchers("/u/novo/cadastro","/u/cadastro/realizado","/u/cadastro/paciente/salvar").permitAll()
 		
 		// acessos privados admin
 		.antMatchers("/u/editar/senha", "/u/confirmar/senha").hasAnyAuthority(PACIENTE, MEDICO)
 		.antMatchers("/u/**").hasAuthority(ADMIN)
 		
 		// acessos privados medicos
-		.antMatchers("/medicos/especialidade/titulo/*").hasAuthority(PACIENTE)
+		.antMatchers("/medicos/especialidade/titulo/*").hasAnyAuthority(PACIENTE, MEDICO)
 		.antMatchers("/medicos/dados", "/medicos/salvar", "/medicos/editar").hasAnyAuthority(MEDICO, ADMIN)
 		.antMatchers("/medicos/**").hasAuthority(MEDICO)
 		
@@ -56,7 +59,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 				.logoutSuccessUrl("/")
 			.and()
 				.exceptionHandling()
-				.accessDeniedPage("/acesso-negado");
+				.accessDeniedPage("/acesso-negado")
+			.and()
+				.rememberMe();
 	}
 
 	@Override
